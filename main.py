@@ -1,141 +1,7 @@
-import sqlite3
+from datetime import datetime
 
-print('Это приложение ToDo для заметок')
-
-# Используем менеджер контекста для работы с базой данных
-with sqlite3.connect('todolist.db') as conn:
-    # Создаем курсор
-    cursor = conn.cursor()
-    # Создаем таблицу
-    cursor.execute('''    
-    CREATE TABLE IF NOT EXISTS todolist (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        date_todo DATE NOT NULL,
-        time_todo TIME NOT NULL,
-        task_todo TEXT NOT NULL
-    )
-    ''')
-    # Сохраняем изменения
-    conn.commit()
-
-def add_todo():
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-        # Пример данных для добавления
-        date_todo = input('Введите дату в формате: "2023-10-01" - ') # Дата события
-        time_todo = input('Введите время в формате: "14:30" - ') # Время события
-        task_todo = input('Введите дату в формате: "Встреча с командой" - ') # Текст события
-
-        # Выполняем запрос для вставки новой записи
-        cursor.execute('''
-            INSERT INTO todolist (date_todo, time_todo, task_todo)
-            VALUES (?, ?, ?)
-            ''', (date_todo, time_todo, task_todo))
-
-        # Сохраняем изменения
-        conn.commit()
-
-    print("Запись успешно добавлена в таблицу 'todolist'!")
-
-def read_todo():
-    # Используем менеджер контекста для работы с базой данных
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-
-        # Выполняем запрос для выборки всех данных из таблицы events
-        cursor.execute('SELECT * FROM todolist')
-
-        # Получаем все строки результата
-        rows = cursor.fetchall()
-
-        # Проверяем, есть ли данные и выводим их
-        if rows:
-            for row in rows:
-                print(*row, sep=' -- ')  # Выводим каждую строку
-        else:
-            print("Таблица пуста.")
-
-def read_todo_day(date1):
-    # Используем менеджер контекста для работы с базой данных
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-
-        # Выполняем запрос для выборки всех данных из таблицы todolist
-        sql = f'SELECT * FROM todolist WHERE date_todo = "{date1}"'
-
-        cursor.execute(sql)
-
-        # Получаем все строки результата
-        rows = cursor.fetchall()
-
-        # Проверяем, есть ли данные и выводим их
-        if rows:
-            for row in rows:
-                print(*row, sep=' -- ')  # Выводим каждую строку
-        else:
-            print("Таблица пуста.")
-
-def read_todo_day_time(date2, time2):
-    # Используем менеджер контекста для работы с базой данных
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-
-        # Выполняем запрос для выборки всех данных из таблицы todolist
-        sql = f'SELECT * FROM todolist WHERE date_todo = "{date2}" AND time_todo = "{time2}"'
-
-        cursor.execute(sql)
-
-        # Получаем все строки результата
-        rows = cursor.fetchall()
-
-        # Проверяем, есть ли данные и выводим их
-        if rows:
-            for row in rows:
-                print(*row, sep=' -- ')  # Выводим каждую строку
-        else:
-            print("Нет записей по вашим условиям")
-
-def read_todo_diapazon(start_date, finish_date):
-    # Используем менеджер контекста для работы с базой данных
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-
-        # Выполняем запрос для выборки всех данных из таблицы todolist
-        sql = f'SELECT * FROM todolist WHERE date_todo BETWEEN "{start_date}" AND "{finish_date}" ORDER BY date_todo ASC'
-
-        cursor.execute(sql)
-
-        # Получаем все строки результата
-        rows = cursor.fetchall()
-
-        # Проверяем, есть ли данные и выводим их
-        if rows:
-            for row in rows:
-                print(*row, sep=' -- ')  # Выводим каждую строку
-        else:
-            print("Таблица пуста.")
-
-def del_todo(date2, time2):
-    # Используем менеджер контекста для работы с базой данных
-    with sqlite3.connect('todolist.db') as conn:
-        # Создаем курсор
-        cursor = conn.cursor()
-
-        # Выполняем запрос для выборки всех данных из таблицы todolist
-        sql = f'DELETE FROM todolist WHERE date_todo = "{date2}" AND time_todo = "{time2}"'
-
-        cursor.execute(sql)
-
-        # Получаем все строки результата
-        rows = cursor.fetchall()
-
-        # Проверяем, есть ли данные и выводим их
-        print(f"Удалено записей: {cursor.rowcount}")
+# <class 'datetime.date'> - str
+# TODO handle "next friday"
 
 def help1():
     print('\nВыбери необходимое действие:\n1 - Добавить заметку\n'
@@ -143,6 +9,59 @@ def help1():
           '4 - Посмотреть заметку на дату и время\n'
           '5 - Посмотреть заметки в диапазоне дат\n'
           '6 - Удалить запись')
+
+def add_todo(): #TODO проверка правильности ввода данных юзером
+    date_1 = input('Введите дату в формате: "2023-10-01" - ') # Дата события
+    time_1 = input('Введите дату в формате: "14:15" - ')  # Время события
+    date_todo = datetime.strptime(date_1, "%Y-%m-%d").date()
+    time_todo = datetime.strptime(time_1, "%H:%M").time()
+    my_time = datetime.combine(date_todo, time_todo)
+    ask_todo = input('Введите дату в формате: "Встреча с командой" - ') # Текст события
+    with open('myfile.txt', 'a', encoding='utf-8') as f:
+        f.write(f'{my_time} {ask_todo}\n')
+
+
+def load_data():
+    with open('myfile.txt', 'r', encoding='utf-8') as f:
+        list1 = f.readlines()
+        full_list = []
+        for line in list1:
+            list_str = []
+            record = line.strip().split(' ', maxsplit=2)
+            print(f'123 {record}')
+            date_time = datetime.strptime(f'{record[0]} {record[1]}', "%Y-%m-%d %H:%M:%S")
+            print(date_time)
+            print(type(date_time))
+            list_str.append(date_time)
+            list_str.append(record[2])
+            full_list.append(list_str)
+            print(full_list)
+    return full_list
+
+def read_todo_day(date1):
+    list_day = []
+    for i in load_data():
+        date_list = i.split(' ')
+        date_todo = datetime.strptime(date_list[0], "%Y-%m-%d")
+        if date_list[0] == date1:
+
+            print(type(date_list[0]))
+            print(type(date1))
+            list_day.append(i)
+    return list_day
+
+def read_todo_day_time(time2, list_day):
+    list_time = []
+    for i in list_day:
+        date_list = i.split(' ')
+        if date_list[1] == time2:
+            list_time.append(i)
+    return list_time
+
+
+def del_todo(date_time):
+    pass
+    # Используем менеджер контекста для работы с базой данных
 
 def main():
     esc1 = '1'
@@ -155,17 +74,21 @@ def main():
         if comm1 == 1:
             add_todo()
         elif comm1 == 2:
-            read_todo()
+            print(*load_data(), sep='')
         elif comm1 == 3:
             date1 = input('Введите дату в формате: "2023-10-01 - ')
-            read_todo_day(date1)
+            date_todo = datetime.strptime(date1, "%Y-%m-%d")
+            print(*read_todo_day(date_todo), sep='')
         elif comm1 == 4:
             date2 = input('Введите дату записи в формате: "2023-10-01 - ')
             time2 = input('Введите время записи в формате: "14:30" - ')
-            read_todo_day_time(date2, time2)
+            print(*read_todo_day_time(time2, read_todo_day(date2)), sep='')
         elif comm1 == 5:
-            start_date = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
-            finish_date = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
+            start1 = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
+            finish1 = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
+            start_date = datetime.strptime(start1, "%Y-%m-%d").date()
+            end_date = datetime.strptime(finish1, "%Y-%m-%d").date()
+
             read_todo_diapazon(start_date, finish_date)
         elif comm1 == 6:
             date2 = input('Введите дату записи, которую нужно удалить в формате: "2023-10-01 - ')
@@ -180,6 +103,202 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# import sqlite3
+#
+# print('Это приложение ToDo для заметок')
+#
+# # Используем менеджер контекста для работы с базой данных
+# with sqlite3.connect('todolist.db') as conn:
+#     # Создаем курсор
+#     cursor = conn.cursor()
+#     # Создаем таблицу
+#     cursor.execute('''
+#     CREATE TABLE IF NOT EXISTS todolist (
+#         id INTEGER PRIMARY KEY AUTOINCREMENT,
+#         date_todo DATE NOT NULL,
+#         time_todo TIME NOT NULL,
+#         task_todo TEXT NOT NULL
+#     )
+#     ''')
+#     # Сохраняем изменения
+#     conn.commit()
+#
+# def add_todo():
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#         # Пример данных для добавления
+#         date_todo = input('Введите дату в формате: "2023-10-01" - ') # Дата события
+#         time_todo = input('Введите время в формате: "14:30" - ') # Время события
+#         task_todo = input('Введите дату в формате: "Встреча с командой" - ') # Текст события
+#
+#         # Выполняем запрос для вставки новой записи
+#         cursor.execute('''
+#             INSERT INTO todolist (date_todo, time_todo, task_todo)
+#             VALUES (?, ?, ?)
+#             ''', (date_todo, time_todo, task_todo))
+#
+#         # Сохраняем изменения
+#         conn.commit()
+#
+#     print("Запись успешно добавлена в таблицу 'todolist'!")
+#
+# def read_todo():
+#     # Используем менеджер контекста для работы с базой данных
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#
+#         # Выполняем запрос для выборки всех данных из таблицы events
+#         cursor.execute('SELECT * FROM todolist')
+#
+#         # Получаем все строки результата
+#         rows = cursor.fetchall()
+#
+#         # Проверяем, есть ли данные и выводим их
+#         if rows:
+#             for row in rows:
+#                 print(*row, sep=' -- ')  # Выводим каждую строку
+#         else:
+#             print("Таблица пуста.")
+#
+# def read_todo_day(date1):
+#     # Используем менеджер контекста для работы с базой данных
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#
+#         # Выполняем запрос для выборки всех данных из таблицы todolist
+#         sql = f'SELECT * FROM todolist WHERE date_todo = "{date1}"'
+#
+#         cursor.execute(sql)
+#
+#         # Получаем все строки результата
+#         rows = cursor.fetchall()
+#
+#         # Проверяем, есть ли данные и выводим их
+#         if rows:
+#             for row in rows:
+#                 print(*row, sep=' -- ')  # Выводим каждую строку
+#         else:
+#             print("Таблица пуста.")
+#
+# def read_todo_day_time(date2, time2):
+#     # Используем менеджер контекста для работы с базой данных
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#
+#         # Выполняем запрос для выборки всех данных из таблицы todolist
+#         sql = f'SELECT * FROM todolist WHERE date_todo = "{date2}" AND time_todo = "{time2}"'
+#
+#         cursor.execute(sql)
+#
+#         # Получаем все строки результата
+#         rows = cursor.fetchall()
+#
+#         # Проверяем, есть ли данные и выводим их
+#         if rows:
+#             for row in rows:
+#                 print(*row, sep=' -- ')  # Выводим каждую строку
+#         else:
+#             print("Нет записей по вашим условиям")
+#
+# def read_todo_diapazon(start_date, finish_date):
+#     # Используем менеджер контекста для работы с базой данных
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#
+#         # Выполняем запрос для выборки всех данных из таблицы todolist
+#         sql = f'SELECT * FROM todolist WHERE date_todo BETWEEN "{start_date}" AND "{finish_date}" ORDER BY date_todo ASC'
+#
+#         cursor.execute(sql)
+#
+#         # Получаем все строки результата
+#         rows = cursor.fetchall()
+#
+#         # Проверяем, есть ли данные и выводим их
+#         if rows:
+#             for row in rows:
+#                 print(*row, sep=' -- ')  # Выводим каждую строку
+#         else:
+#             print("Таблица пуста.")
+#
+# def del_todo(date2, time2):
+#     # Используем менеджер контекста для работы с базой данных
+#     with sqlite3.connect('todolist.db') as conn:
+#         # Создаем курсор
+#         cursor = conn.cursor()
+#
+#         # Выполняем запрос для выборки всех данных из таблицы todolist
+#         sql = f'DELETE FROM todolist WHERE date_todo = "{date2}" AND time_todo = "{time2}"'
+#
+#         cursor.execute(sql)
+#
+#         # Получаем все строки результата
+#         rows = cursor.fetchall()
+#
+#         # Проверяем, есть ли данные и выводим их
+#         print(f"Удалено записей: {cursor.rowcount}")
+#
+# def help1():
+#     print('\nВыбери необходимое действие:\n1 - Добавить заметку\n'
+#           '2 - Посмотреть все заметки\n3 - Посмотреть заметку на дату\n'
+#           '4 - Посмотреть заметку на дату и время\n'
+#           '5 - Посмотреть заметки в диапазоне дат\n'
+#           '6 - Удалить запись')
+#
+# def main():
+#     esc1 = '1'
+#     while esc1 != '0':
+#
+#         help1()
+#
+#         comm1 = int(input('Введите номер операции: '))
+#
+#         if comm1 == 1:
+#             add_todo()
+#         elif comm1 == 2:
+#             read_todo()
+#         elif comm1 == 3:
+#             date1 = input('Введите дату в формате: "2023-10-01 - ')
+#             read_todo_day(date1)
+#         elif comm1 == 4:
+#             date2 = input('Введите дату записи в формате: "2023-10-01 - ')
+#             time2 = input('Введите время записи в формате: "14:30" - ')
+#             read_todo_day_time(date2, time2)
+#         elif comm1 == 5:
+#             start_date = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
+#             finish_date = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
+#             read_todo_diapazon(start_date, finish_date)
+#         elif comm1 == 6:
+#             date2 = input('Введите дату записи, которую нужно удалить в формате: "2023-10-01 - ')
+#             time2 = input('Введите время записи, которую нужно удалить в формате: "14:30" - ')
+#             read_todo_day_time(date2, time2)
+#             del1 = input('Если хотите удалить эти данные, напишите y\n'
+#                          'В противном случае, напишите n')
+#             if del1 == 'y':
+#                 del_todo(date2, time2)
+#         esc1 = input('\nДля продолжения работы программы нажмите Enter.\nДля завершения напишите 0')
+#
+#
+# if __name__ == "__main__":
+#     main()
 
 
 
