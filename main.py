@@ -2,6 +2,9 @@ from datetime import datetime
 
 # <class 'datetime.date'> - str
 # TODO handle "next friday"
+# TODO добавить типизацию
+# TODO 1. переписать недостающие части, 2. добавить типизацию. 3. изучаем ооп
+# TODO убрать секунды
 
 def help1():
     print('\nВыбери необходимое действие:\n1 - Добавить заметку\n'
@@ -20,6 +23,9 @@ def add_todo(): #TODO проверка правильности ввода да�
     with open('myfile.txt', 'a', encoding='utf-8') as f:
         f.write(f'{my_time} {ask_todo}\n')
 
+def data_show(data_list):
+    for line in data_list:
+        print(*line)
 
 def load_data():
     with open('myfile.txt', 'r', encoding='utf-8') as f:
@@ -28,76 +34,85 @@ def load_data():
         for line in list1:
             list_str = []
             record = line.strip().split(' ', maxsplit=2)
-            print(f'123 {record}')
             date_time = datetime.strptime(f'{record[0]} {record[1]}', "%Y-%m-%d %H:%M:%S")
-            print(date_time)
-            print(type(date_time))
             list_str.append(date_time)
             list_str.append(record[2])
             full_list.append(list_str)
-            print(full_list)
+            # print(full_list)
     return full_list
 
-def read_todo_day(date1):
+def read_todo_day(date1) -> list:
     list_day = []
     for i in load_data():
-        date_list = i.split(' ')
-        date_todo = datetime.strptime(date_list[0], "%Y-%m-%d")
-        if date_list[0] == date1:
-
-            print(type(date_list[0]))
-            print(type(date1))
+        print(date1)
+        print(i[0])
+        print(type(i[0]))
+        print(type(date1))
+        if i[0].date() == date1.date():
             list_day.append(i)
     return list_day
 
-def read_todo_day_time(time2, list_day):
+def read_todo_day_time(time2):
     list_time = []
-    for i in list_day:
-        date_list = i.split(' ')
-        if date_list[1] == time2:
+    for i in load_data():
+        if i[0] == time2:
             list_time.append(i)
     return list_time
 
+def read_todo_diapazon(start_date, finish_date):
+    list_diapazon = []
+    for i in load_data():
+        # print(i[0])
+        # print(start_date)
+        # print(finish_date)
+        if start_date <= i[0] <= finish_date:
+            list_diapazon.append(i)
+    return list_diapazon
 
-def del_todo(date_time):
-    pass
+def del_todo(del_list):
+    result = [item for item in load_data() if item not in del_list]
+    print(result)
+    # TODO перепиши в файл вложенные списки из result
+    # return result
     # Используем менеджер контекста для работы с базой данных
 
 def main():
     esc1 = '1'
     while esc1 != '0':
-
         help1()
-
         comm1 = int(input('Введите номер операции: '))
 
         if comm1 == 1:
             add_todo()
         elif comm1 == 2:
-            print(*load_data(), sep='')
+            data_show(load_data())
         elif comm1 == 3:
             date1 = input('Введите дату в формате: "2023-10-01 - ')
             date_todo = datetime.strptime(date1, "%Y-%m-%d")
-            print(*read_todo_day(date_todo), sep='')
+            data_show(read_todo_day(date_todo))
         elif comm1 == 4:
             date2 = input('Введите дату записи в формате: "2023-10-01 - ')
             time2 = input('Введите время записи в формате: "14:30" - ')
-            print(*read_todo_day_time(time2, read_todo_day(date2)), sep='')
+            date_time = datetime.strptime(f'{date2} {time2}', "%Y-%m-%d %H:%M:%S")
+            data_show(read_todo_day_time(date_time))
+            # print(*read_todo_day_time(time2, read_todo_day(date2)), sep='')
         elif comm1 == 5:
             start1 = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
             finish1 = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
-            start_date = datetime.strptime(start1, "%Y-%m-%d").date()
-            end_date = datetime.strptime(finish1, "%Y-%m-%d").date()
-
-            read_todo_diapazon(start_date, finish_date)
+            start_date = datetime.strptime(start1, "%Y-%m-%d")
+            end_date = datetime.strptime(finish1, "%Y-%m-%d")
+            data_show(read_todo_diapazon(start_date, end_date))
         elif comm1 == 6:
             date2 = input('Введите дату записи, которую нужно удалить в формате: "2023-10-01 - ')
             time2 = input('Введите время записи, которую нужно удалить в формате: "14:30" - ')
-            read_todo_day_time(date2, time2)
+            date_time = datetime.strptime(f'{date2} {time2}', "%Y-%m-%d %H:%M:%S")
+            data_show(read_todo_day_time(date_time))
+            print(load_data())
+            print(read_todo_day_time(date_time))
             del1 = input('Если хотите удалить эти данные, напишите y\n'
                          'В противном случае, напишите n')
             if del1 == 'y':
-                del_todo(date2, time2)
+                del_todo(read_todo_day_time(date_time))
         esc1 = input('\nДля продолжения работы программы нажмите Enter.\nДля завершения напишите 0')
 
 
