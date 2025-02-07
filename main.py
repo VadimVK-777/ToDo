@@ -12,12 +12,12 @@ from pickle import GLOBAL
 # 3. сохранение данных из приложения в файл
 
 TODO_DB_FILE = "myfile.txt"
+list_data = []
 
 def update_data() -> list:
     if os.path.exists(TODO_DB_FILE):
         with open(TODO_DB_FILE, 'r', encoding='utf-8') as f:
             list1 = f.readlines()
-            list_data = []
             for line in list1:
                 list_str = []
                 record = line.strip().split(' ', maxsplit=2)
@@ -25,10 +25,11 @@ def update_data() -> list:
                 list_str.append(date_time)
                 list_str.append(record[2])
                 list_data.append(list_str)
+                list_data.sort()
     else:
         with open(TODO_DB_FILE, 'w', encoding='utf-8') as f:
             print("Приложение запущено.")
-    return sorted(list_data)
+    return list_data
 
 def help1() -> None:
     print('\nВыбери необходимое действие:\n1 - Добавить заметку\n'
@@ -47,83 +48,54 @@ def add_todo(list_data: list) -> list: #TODO проверка правильно
     new_string = []
     new_string.extend([my_time, ask_todo])
     list_data.append(new_string)
-    print(f'123 {list_data}')
-    print(type(list_data))
-
-    # print(sorted(list_data))
-    # print(list_data)
-    # return sorted(list_data)
-
-    # with open('myfile.txt', 'a', encoding='utf-8') as f:
-    #     list_file = f.readlines()
-    #     print(list_file)
-        # if :
-        #
-        # f.write(f'{my_time} {ask_todo}\n')
+    list_data.sort()
+    print(list_data)
+    return list_data
 
 def data_show(list_data: list) -> None:
     for line in list_data:
-        print(line, end='')
+        print(*line)
 
-# удалить за ненадобностью
-# def load_data(list1) -> list:
-#         for line in list1:
-#             list_str = []
-#             record = line.strip().split(' ', maxsplit=2)
-#             date_time = datetime.strptime(f'{record[0]} {record[1]}', "%Y-%m-%d %H:%M:%S")
-#             list_str.append(date_time)
-#             list_str.append(record[2])
-#             full_list.append(list_str)
-#             # print(full_list)
-#     return full_list
+def read_todo_day(date1: datetime) -> list:
+    list_day = []
+    for i in list_data:
+        if i[0].date() == date1.date():
+            list_day.append(i)
+    return list_day
 
-# def read_todo_day(date1: datetime) -> list:
-#     list_day = []
-#     for i in load_data():
-#         print(date1)
-#         print(i[0])
-#         print(type(i[0]))
-#         print(type(date1))
-#         if i[0].date() == date1.date():
-#             list_day.append(i)
-#     return list_day
-#
-# def read_todo_day_time(time2: datetime) -> list:
-#     list_time = []
-#     for i in load_data():
-#         if i[0] == time2:
-#             list_time.append(i)
-#     return list_time
-#
-# def read_todo_diapazon(start_date: datetime, finish_date: datetime) -> list:
-#     list_diapazon = []
-#     for i in load_data():
-#         # print(i[0])
-#         # print(start_date)
-#         # print(finish_date)
-#         if start_date <= i[0] <= finish_date:
-#             list_diapazon.append(i)
-#     return list_diapazon
-#
-# def del_todo(del_list: list) -> None:
-#     result = [item for item in load_data() if item not in del_list]
-#     with open(TODO_DB_FILE, 'w', encoding='utf-8') as f:
-#         for item in result:
-#             # Преобразуем каждый элемент списка в строку
-#             date_str = item[0].strftime('%Y-%m-%d %H:%M:%S')
-#             message = item[1]
-#             f.write(f"{date_str} {message}\n")
+def read_todo_day_time(time2: datetime) -> list:
+    list_time = []
+    for i in list_data:
+        if i[0] == time2:
+            list_time.append(i)
+    return list_time
+
+def read_todo_diapazon(start_date: datetime, finish_date: datetime) -> list:
+    list_diapazon = []
+    for i in list_data:
+        # print(i[0])
+        # print(start_date)
+        # print(finish_date)
+        if start_date <= i[0] <= finish_date:
+            list_diapazon.append(i)
+    return list_diapazon
+
+def del_todo(del_list: list) -> None:
+    global list_data
+    result = [item for item in list_data if item not in del_list]
+    list_data = result
+
 
 def main() -> None:
     esc1 = '1'
+    update_data()
     while esc1 != '0':
         help1()
-        update_data()
         comm1 = int(input('Введите номер операции: '))
         if comm1 == 1:
-            add_todo(update_data())
+            add_todo(list_data)
         elif comm1 == 2:
-            data_show(update_data())
+            data_show(list_data)
         elif comm1 == 3:
             date1 = input('Введите дату в формате: "2023-10-01 - ')
             date_todo = datetime.strptime(date1, "%Y-%m-%d")
@@ -150,7 +122,9 @@ def main() -> None:
             if del1 == 'y':
                 del_todo(read_todo_day_time(date_time))
         esc1 = input('\nДля продолжения работы программы нажмите Enter.\nДля завершения напишите 0')
-
+    with open(TODO_DB_FILE, 'w', encoding='utf-8') as f:
+        for i in list_data:
+            f.write(f'{i[0]} {i[1]}' + '\n')
 
 if __name__ == "__main__":
     main()
