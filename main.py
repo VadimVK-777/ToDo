@@ -24,7 +24,9 @@ def update_data() -> list:
                 list_str.append(record[2])
                 list_str.append(record[3])
                 list_data.append(list_str)
-                list_data.sort()
+            print(list_data)
+            list_data.sort(key=lambda x: (x[0].date(), x[1]))
+            print(list_data)
             return list_data
 
     else:
@@ -34,10 +36,12 @@ def update_data() -> list:
 
 def start_help() -> None:
     print('\nВыбери необходимое действие:\n1 - Добавить заметку\n'
-          '2 - Посмотреть все заметки\n3 - Посмотреть заметку на дату\n'
-          '4 - Посмотреть заметку на дату и время\n'
-          '5 - Посмотреть заметки в диапазоне дат\n'
-          '6 - Удалить запись')
+          '2 - Посмотреть все заметки\n'
+          '3 - Посмотреть все заметки, коротко'
+          '4 - Посмотреть заметку на дату\n'
+          '5 - Посмотреть заметку на дату и время\n'
+          '6 - Посмотреть заметки в диапазоне дат\n'
+          '7 - Удалить запись')
 
 def add_todo(date_time, note, daily) -> list: #TODO проверка правильности ввода данных юзером
     new_string = []
@@ -49,24 +53,61 @@ def add_todo(date_time, note, daily) -> list: #TODO проверка прави�
 def data_show(list_data: list) -> None:
     for index,line in enumerate(list_data, 1):
         if bool(int(line[1])):
-            print(f'{index}. {line[0].date()} - заметка на весь день - {line[2]}')
+            print(f'{index}. [{line[0].date()} --:--:--] - {line[2]}')
         else:
-            print(f'{index}. {line[0]} - {line[2]}')
+            print(f'{index}. [{line[0]}] - {line[2]}')
 
 # TODO сделать короткий вывод
 def data_show_short(list_data: list) -> None:
-    for line in list_data:
-        if line[1]:
-            print(f'{line[0].date()} - заметка на весь день - {line[2]}')
-        else:
-            print(f'{line[0]} - {line[2]}')
+    grouped_data = {}
+    for entry in list_data:
+        date = entry[0].date()  # Получаем только дату
+        if date not in grouped_data:
+            grouped_data[date] = {'tasks': [], 'events': []}  # Создаем словарь для задач и событий
+        if entry[1] == '1':
+            grouped_data[date]['tasks'].append(entry[2])  # Добавляем задачу
+        elif entry[1] == '0':
+            grouped_data[date]['events'].append(entry[2])  # Добавляем событие
+
+    # Выводим данные в нужном формате
+    for date, entries in grouped_data.items():
+        print(f"[{date}]")
+        print("============")
+        for task in entries['tasks']:
+            print(f"* {task}")
+        print("------------")
+        for event in entries['events']:
+            print(event)
+        print()  # Пустая строка для разделения дат
+
+    # for line in list_data:
+    #     if line[1]:
+    #         print(f'{line[0].date()} - заметка на весь день - {line[2]}')
+    #     else:
+    #         print(f'{line[0]} - {line[2]}')
 
 def read_todo_day(date1: datetime) -> list:
     list_day = []
     for i in list_data:
         if i[0].date() == date1.date():
             list_day.append(i)
+    print(list_day)
     return list_day
+
+
+# print(f'{date}\n====\n{list_task_daily_ordered}\n----\n{list_timed_tasks_ordered}\n")
+def show_short(list_day: list) -> None:
+
+    list_task_daily = [x for x in list_day if x[1] == '1']
+    list_task_time = [x for x in list_day if x[1] == '0']
+    print(f'[{list_task_daily[0][0].date()}]\n============')
+    for i in list_task_daily:
+        print(f'* {i[2]}')
+    print('------------')
+    for i in list_task_time:
+        print(f'{list_task_time[0][0].time()} - {i[2]}')
+
+
 
 def read_todo_day_time(time2: datetime) -> list:
     list_time = []
@@ -116,25 +157,31 @@ def main() -> None:
                 ask_todo = input('Введите дату в формате: "Встреча с командой" - ')  # Текст события
                 add_todo(my_time, ask_todo, daily)
         elif comm1 == 2:
-            data_show(list_data)
+            # data_show(list_data)
+            date1 = input('Введите дату в формате: "2023-10-01 - ')
+            date_todo = datetime.strptime(date1, "%Y-%m-%d")
+            print(date_todo)
+            show_short(read_todo_day(date_todo))
         elif comm1 == 3:
+            data_show_short(list_data)
+        elif comm1 == 4:
             date1 = input('Введите дату в формате: "2023-10-01 - ')
             date_todo = datetime.strptime(date1, "%Y-%m-%d")
             print(date_todo)
             data_show(read_todo_day(date_todo))
-        elif comm1 == 4:
+        elif comm1 == 5:
             date2 = input('Введите дату записи в формате: "2023-10-01 - ')
             time2 = input('Введите время записи в формате: "14:30" - ')
             date_time = datetime.strptime(f'{date2} {time2}', "%Y-%m-%d %H:%M:%S")
             data_show(read_todo_daytime_or_diapazon(date_time))
             # print(*read_todo_day_time(time2, read_todo_day(date2)), sep='')
-        elif comm1 == 5:
+        elif comm1 == 6:
             start1 = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
             finish1 = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
             start_date = datetime.strptime(start1, "%Y-%m-%d")
             end_date = datetime.strptime(finish1, "%Y-%m-%d")
             data_show(read_todo_daytime_or_diapazon(start_date, end_date))
-        elif comm1 == 6:
+        elif comm1 == 7:
             date2 = input('Введите дату записи, которую нужно удалить в формате: "2023-10-01 - ')
             time2 = input('Введите время записи, которую нужно удалить в формате: "14:30" - ')
             date_time = datetime.strptime(f'{date2} {time2}', "%Y-%m-%d %H:%M:%S")
