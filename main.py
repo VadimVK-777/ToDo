@@ -25,7 +25,7 @@ def update_data() -> list:
                 list_str.append(record[3])
                 list_data.append(list_str)
             list_data.sort(key=lambda x: (x[0].date(), x[1]))
-            print(list_data)
+            # print(list_data)
             return list_data
 
     else:
@@ -113,7 +113,7 @@ def main() -> None:
             # Получаем текущую дату
             default_date = datetime.now()
             # Запрашиваем ввод пользователя
-            user_input = input(f"Введите дату в формате '{default_date}'. Если запись на сегодня, нажмите Enter: ")
+            user_input = input(f"Введите дату в формате '{default_date.date()}'. Если запись на сегодня, нажмите Enter: ")
             # Если пользователь не ввел ничего, используем текущую дату
             if not user_input:
                 user_date = default_date
@@ -125,16 +125,15 @@ def main() -> None:
                     print("Некорректный формат даты. Используйте 'YYYY-MM-DD'.")
                     user_date = default_date  # Используем значение по умолчанию в случае ошибки
             # date_1 = input('Введите дату в формате: "2023-10-01" - ')  # Дата события
-            daily = input('Если задача на весь день, нажмите Enter. Если нет, напишите время в форматe "12:00"')
-            if daily == '1':
+            time_todo = input('Если задача на весь день, нажмите Enter. Если нет, напишите время в форматe "12:00": ')
+            if not time_todo:
                 ask_todo = input('Введите дату в формате: "Встреча с командой" - ')  # Текст события
-                add_todo(user_date, ask_todo, daily)
-            elif daily == '0':
-                time_1 = input('Введите дату в формате: "14:15" - ')  # Время события
-                time_todo = datetime.strptime(time_1, "%H:%M").time()
+                add_todo(user_date, ask_todo, 1)
+            else:
+                time_todo = datetime.strptime(time_todo, "%H:%M").time()
                 my_time = datetime.combine(user_date, time_todo)
                 ask_todo = input('Введите дату в формате: "Встреча с командой" - ')  # Текст события
-                add_todo(my_time, ask_todo, daily)
+                add_todo(my_time, ask_todo, 0)
         elif comm1 == 2:
             data_show(list_data)
         elif comm1 == 3:
@@ -152,7 +151,6 @@ def main() -> None:
             time2 = input('Введите время записи в формате: "14:30" - ')
             date_time = datetime.strptime(f'{date2} {time2}', "%Y-%m-%d %H:%M")
             data_show(read_todo_daytime_or_diapazon(date_time))
-            # print(*read_todo_day_time(time2, read_todo_day(date2)), sep='')
         elif comm1 == 6:
             start1 = input('Введите дату начала диапазона в формате: "2023-10-01 - ')
             finish1 = input('Введите дату конца диапазона в формате: "2023-10-01 - ')
