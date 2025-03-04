@@ -59,12 +59,16 @@ def add_todo(date_time, note, daily) -> list: #TODO проверка прави�
     list_data.sort()
     return list_data
 
+
+# TODO Удалить в будущем
 def data_show(database: dict) -> None:
     for index,key in enumerate(database['records'], 1):
         if key['daily']:
             print(f'{index}. [{key['date'].date()} --:--] - {key['task']}')
         else:
             print(f'{index}. [{key['date'].strftime("%Y-%m-%d %H:%M")}] - {key['task']}')
+
+
 
 def read_todo_day(database: dict, date_todo: datetime) -> dict:
     # pp(database)
@@ -95,7 +99,6 @@ def show_short(database: dict) -> None:
         grouped_data[date_key].append(entry)
     # Преобразуем обратно в список вложенных списков
     result = list(grouped_data.values())
-
     for list_day in result:
         list_task_daily = [x for x in list_day if x['daily'] is True]
         # list_task_daily1 = list(filter(lambda x: x[1] == '1', list_day))
@@ -110,6 +113,29 @@ def show_short(database: dict) -> None:
             for line in list_task_time:
                 print(f'{line["date"].time()} - {line["task"]}')
         print('.............\n')
+
+def show_short1(database: dict) -> None:
+    # pp(database['records'])
+    # Создаем словарь для группировки по датам
+    grouped_data = defaultdict(list)
+    # Группируем данные по дате (без учета времени)
+    for entry in database['records']:
+        date_key = entry['date'].date()  # Получаем только дату
+        grouped_data[date_key].append(entry)
+    # Преобразуем обратно в список вложенных списков
+    result = list(grouped_data.values())
+    for list_day in result:
+        list_task_daily = [x for x in list_day if x['daily'] is True]
+        # list_task_daily1 = list(filter(lambda x: x[1] == '1', list_day))
+        list_task_time = [x for x in list_day if x['daily'] is False]
+        # list_task_time = list(filter(lambda x: x[0] == '1', list_day))
+        print(f'{list_day[0]['date'].date()}')
+        if list_task_time:
+            for line in list_task_time:
+                print(f'{str(line["date"].strftime("%H:%M")):>10} | {line["task"]}')
+        if list_task_daily:
+            for line in list_task_daily:
+                print(f'{"*":>6} {"|":>5} {line["task"]}')
 
 def read_todo_day_time(time2: datetime, database: dict) -> list:
     list_time = []
@@ -175,7 +201,8 @@ def main() -> None:
                 ask_todo = input('Введите дату в формате: "Встреча с командой" - ')  # Текст события
                 add_todo(my_time, ask_todo, '0')
         elif comm1 == 2:
-            data_show(database)
+            show_short1(database)
+            # data_show(database)
         elif comm1 == 3:
             show_short(database)
         elif comm1 == 4:
