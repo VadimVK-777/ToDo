@@ -32,7 +32,7 @@ def update_data() -> dict:
                 record['task'] = record_data[4]
                 records.append(record)
             database['records'] = records
-            pp(database)
+            # pp(database)
             return database
     else:
         with open(TODO_DB_FILE, 'w', encoding='utf-8') as f:
@@ -165,11 +165,7 @@ def show_short1(database: dict) -> None:
             for line in list_task_daily:
                 print(f'{"*":>6} {"|":>5} {line["task"]}')
 
-def truncate_task(task: str, max_length: int = 31) -> str:
-    """Обрезает задачу, если она превышает max_length, добавляя многоточие."""
-    if len(task) > max_length:
-        return task[:max_length - 3] + '...'
-    return task
+
 
 # def show_table(database: dict) -> None:
 #     # Создаем словарь для группировки по датам
@@ -202,13 +198,18 @@ def truncate_task(task: str, max_length: int = 31) -> str:
 #             print(f'| {time_str:>10} | {task_str:<31} | {daily_str:<31} |')
 #         print(header)
 
-def show_table(database: dict) -> None:
+def show_table(database: dict, len_task=11, len_daily=19) -> None:
+    def truncate_task(task: str, max_length: int) -> str:
+        """Обрезает задачу, если она превышает max_length, добавляя многоточие."""
+        if len(task) > max_length:
+            return task[:max_length - 3] + '...'
+        return task
     # Создаем словарь для группировки по датам
     grouped_data = defaultdict(list)
     # Группируем данные по дате (без учета времени)
-    header = "+------------+---------------------------------+---------------------------------+"
-    date_row = "|  Date      |              Task               |           Daily Task            |"
-    time_row = "|     Time   |                                 |                                 |"
+    header = f"+------------+{'-'*(len_task+2)}+{'-'*(len_daily+2)}+"
+    date_row = f"|  Date      |{' '*(len_task//2)}Task{' '*(len_task-(len_task//2)-2)}|{' '*(len_daily//2 -4)}Daily Task{' '*(len_daily-(len_daily//2)-4)}|"
+    time_row = f"|     Time   |  {' '*(len_task)}|  {' '*(len_daily)}|"
     print(f'{header}\n{date_row}\n{time_row}\n{header}')
     for entry in database['records']:
         date_key = entry['date'].date()  # Получаем только дату
@@ -221,16 +222,17 @@ def show_table(database: dict) -> None:
         # Задачи с daily: True
         list_task_daily = [x for x in list_day if x['daily'] is True]
         # Выводим дату
-        print(f'| {date_key} | {"":>31} | {"":>32}|')
+        print(f'| {date_key} |  {"":>{len_task}}|  {"":>{len_daily}}|')
         # Определяем максимальное количество задач в день
         max_length = max(len(list_task_time), len(list_task_daily))
         for i in range(max_length):
             time_task = list_task_time[i] if i < len(list_task_time) else {'date': None, 'task': ''}
             daily_task = list_task_daily[i] if i < len(list_task_daily) else {'task': ''}
             time_str = time_task['date'].strftime("%H:%M") if time_task['date'] else ''
-            task_str = truncate_task(time_task["task"])  # Обрезаем задачу
-            daily_str = truncate_task(daily_task["task"])  # Обрезаем ежедневную задачу
-            print(f'| {time_str:>10} | {task_str:<31} | {daily_str:<31} |')
+            task_str = truncate_task(time_task["task"], len_task)  # Обрезаем задачу
+            daily_str = truncate_task(daily_task["task"], len_daily)  # Обрезаем ежедневную задачу
+            print(f'| {time_str:>10} | {task_str:<{len_task}} | {daily_str:<{len_daily}} |')
+            # print(f'| 1-{len(time_str)} | 2-{len(task_str)} | 3-{len(daily_str)} |')
         print(header)
 
 def show_long(database: dict) -> None:
