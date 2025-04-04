@@ -376,12 +376,13 @@ def date_16(str16: str) -> datetime:
 
 def main():
     database = update_data()
+    database['records'] = sorted(database['records'], key=sort_database)
     parser = argparse.ArgumentParser(description='Пример использования argparse.')
     parser.add_argument('-i', '--interactive', action='store_true', help='Запустить интерактивный режим.', required=False)
-    parser.add_argument('-v', '--view', choices=['short', 'long', 'table', 'compact'], help='Показать все записи.', required=False)
-    parser.add_argument('-r', '--remove', nargs='+', help='Удалить запись.', required=False)
-    parser.add_argument('-a', '--add', nargs='+', help='Добавить запись.', required=False)
-    parser.add_argument('-l', '--list', nargs='+', help='Показать записи на день или в диапазоне дат', required=False)
+    parser.add_argument('-v', '--view', choices=['short', 'long', 'table', 'compact'], help='Показать все записи. Выбери режим отображения. Пример команды: -v table', required=False)
+    parser.add_argument('-r', '--remove', nargs='+', help='Удалить запись по дате и задаче. Пример команды: -r 2023-10-01 обед', required=False)
+    parser.add_argument('-a', '--add', nargs='+', help='Добавить запись. Пример команды: -a 2023-10-01T14:20 Встреча с друзьями', required=False)
+    parser.add_argument('-l', '--list', nargs='*', help='Показать записи на день или в диапазоне дат Пример команды: -l 2023-10-01T14:15 2023-10-01T14:40', required=False, default=777)
 
     args = parser.parse_args()
 
@@ -410,15 +411,15 @@ def main():
             database = add_todo(database, args.add[0][:10], args.add[0][-5:], args.add[1], '0')
             save_to_file(database)
     elif args.list:
-        pp(len(args.list))
-        if len(args.list) < 2:
+        if len(args.list) == 1:
             if len(args.list[0]) == 10:
                 start_date = datetime.strptime(args.list[0], "%Y-%m-%d")
                 show_table(read_todo_daytime_or_diapazon(database, 1, start_date))
             elif len(args.list[0]) == 16:
                 start_date = datetime.strptime(f'{args.list[0][:10]} {args.list[0][-5:]}', "%Y-%m-%d %H:%M")
+                pp(start_date)
                 show_table(read_todo_daytime_or_diapazon(database,0, start_date))
-        else:
+        elif len(args.list) == 2:
             if len(args.list[0]) == 10 and len(args.list[1]) == 10:
                 show_table(read_todo_daytime_or_diapazon(database, 1, date_10(args.list[0]), date_10(args.list[1])))
             elif len(args.list[0]) == 10 and len(args.list[1]) == 16:
@@ -427,17 +428,8 @@ def main():
                 show_table(read_todo_daytime_or_diapazon(database, 0, date_16(args.list[0]), date_16(args.list[1])))
             elif len(args.list[0]) == 16 and len(args.list[1]) == 10:
                 show_table(read_todo_daytime_or_diapazon(database, 0, date_16(args.list[0]), date_10(args.list[1])))
-
-
-
-
-
-
-
-
-
-
-
+    else:
+        show_table(database)
 
 # interactive_mode()
 
