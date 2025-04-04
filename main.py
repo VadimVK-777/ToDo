@@ -331,6 +331,7 @@ def date_16(str16: str) -> datetime:
 def main():
     database = update_data()
     while args:
+        database['records'] = sorted(database['records'], key=sort_database)
         arg = args[0]
         if arg == '-i' or arg == '--interactive':
             interactive_mode()
@@ -355,8 +356,36 @@ def main():
                 database = add_todo(database, args[1][:10], args[1][-5:], args[2], '0')
                 save_to_file(database)
         elif arg == '-l' or arg == '--list':
-            if len(args) < 3:
-                if len(args[1]) == 10:
+            if len(args) == 1:
+                show_table(database)
+            elif 1 < len(args) < 3:
+                if args[1] == 'today':
+                    # Получаем сегодняшнюю дату
+                    today = datetime.now().date()
+                    # Ищем записи с сегодняшней датой
+                    records_today = [record for record in database['records'] if record['date'].date() == today]
+                    if records_today:
+                        # Если есть записи с сегодняшней датой, выводим их
+                        result = records_today
+                    else:
+                        # Если записей с сегодняшней датой нет, ищем ближайшую будущую дату
+                        closest_record = None
+                        closest_date = None
+                        for record in database['records']:
+                            record_date = record['date'].date()
+                            # Проверяем, что дата записи больше или равна сегодняшней
+                            if record_date >= today:
+                                if closest_date is None or record_date < closest_date:
+                                    closest_record = record
+                                    closest_date = record_date
+                        # Если нашли ближайшую будущую дату, добавляем её в результат
+                        if closest_record:
+                            result = [closest_record]
+                        else:
+                            result = []  # Если нет записей вообще
+                    database['records'] = result
+                    show_table(database)
+                elif len(args[1]) == 10:
                     start_date = datetime.strptime(args[1], "%Y-%m-%d")
                     show_table(read_todo_daytime_or_diapazon(database, 1, start_date))
                 elif len(args[1]) == 16:
@@ -371,6 +400,21 @@ def main():
                     show_table(read_todo_daytime_or_diapazon(database, 0, date_16(args[1]), date_16(args[2])))
                 elif len(args[1]) == 16 and len(args[2]) == 10:
                     show_table(read_todo_daytime_or_diapazon(database, 0, date_16(args[1]), date_10(args[2])))
+
+        elif arg == '-h' or arg == '--help':
+            print('''
+            Пример использования argparse:
+            
+  -h, --help            show this help message and exit
+  -i, --interactive     Запустить интерактивный режим.
+  -v {short,long,table,compact}, --view {short,long,table,compact}
+                        Показать все записи. Выбери режим отображения. Пример команды: -v table
+  -r REMOVE [REMOVE ...], --remove REMOVE [REMOVE ...]
+                        Удалить запись по дате и задаче. Пример команды: -r 2023-10-01 обед
+  -a ADD [ADD ...], --add ADD [ADD ...]
+                        Добавить запись. Пример команды: -a 2023-10-01T14:20 Встреча с друзьями
+  -l LIST [LIST ...], --list LIST [LIST ...]
+                        Показать записи на день или в диапазоне дат Пример команды: -l 2023-10-01T14:15 2023-10-01T14:40''')
 
         args.clear()
 
